@@ -3,12 +3,13 @@ import { create } from "zustand";
 import { getBaseURL } from "../functions";
 
 interface ServerState {
-    servers: Types.Server[];
-    setServers: (services: Types.Server[]) => void;
-    fetchServers: () => void;
-    swapPositions: (serverA: string, serverB: string) => void;
-    deleteServer: (serverId: string) => void;
-    moveService: (server: Types.Server, service: Types.Service, position: number) => void;
+  servers: Types.Server[];
+  setServers: (services: Types.Server[]) => void;
+  fetchServers: () => void;
+  swapPositions: (serverA: string, serverB: string) => void;
+  deleteServer: (serverId: string) => void;
+  moveService: (server: Types.Server, service: Types.Service, position: number) => void;
+  removeService: (service: Types.Service) => void;
 };
 
 export const useServers = create<ServerState>((set) => ({
@@ -87,6 +88,17 @@ export const useServers = create<ServerState>((set) => ({
             return null;
         });
 
-        await useServers.getState().fetchServers();
+        useServers.getState().fetchServers();
+    },
+    removeService: async (service) => {
+        await axios.delete(`${getBaseURL()}/service/${service.id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        }).catch(() => {
+            return null;
+        });
+
+        useServers.getState().fetchServers();
     }
 }));

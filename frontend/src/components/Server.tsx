@@ -22,6 +22,7 @@ import {
 } from "@mui/icons-material";
 import { getBaseURL } from "../functions";
 import { useServers } from "../states/Servers";
+import axios from "axios";
 
 function Server({
   id,
@@ -110,7 +111,14 @@ function Server({
           "aria-labelledby": "basic-button",
         }}
       >
-        <MenuItem onClick={() => {}}>
+        <MenuItem
+          onClick={() => {
+            setPopUpState("editService");
+            setPopUpTarget(menuService?.id || null);
+            setAnchorEl(null);
+            setMenuService(null);
+          }}
+        >
           <ListItemIcon>
             <Edit fontSize="small" />
           </ListItemIcon>
@@ -129,7 +137,15 @@ function Server({
           </ListItemIcon>
           <ListItemText>Move</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => {}}>
+        <MenuItem
+          onClick={() => {
+            if (!menuService) return;
+
+            servers.removeService(menuService);
+            setAnchorEl(null);
+            setMenuService(null);
+          }}
+        >
           <ListItemIcon>
             <Delete fontSize="small" />
           </ListItemIcon>
@@ -193,19 +209,50 @@ function Server({
           >
             <DragIndicator fontSize="small" />
           </IconButton>
-          <IconButton
-            size="small"
+          <Box
             sx={{
-              color: "#ffffff",
-              backgroundColor: "#00000055",
-              margin: "0.5rem",
-            }}
-            onClick={() => {
-              console.log("Edit");
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <Edit fontSize="small" />
-          </IconButton>
+            <IconButton
+              size="small"
+              sx={{
+                color: "#ffffff",
+                backgroundColor: "#00000055",
+                margin: "0.5rem",
+              }}
+              onClick={() => {
+                console.log("Edit");
+                setPopUpTarget(id);
+                setPopUpState("editServer");
+              }}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              sx={{
+                color: "#ffffff",
+                backgroundColor: "#00000055",
+                margin: "0.5rem",
+              }}
+              onClick={() => {
+                console.log("Delete");
+                axios.delete(`${getBaseURL()}/servers/${id}`, {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  },
+                }).then(() => {
+                  servers.fetchServers();
+                })
+              }}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
         <img
           alt=""

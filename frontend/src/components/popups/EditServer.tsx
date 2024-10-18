@@ -16,7 +16,15 @@ import axios from "axios";
 import { getBaseURL } from "../../functions";
 import { useServers } from "../../states/Servers";
 
-function AddServer({ closePopUp }: { closePopUp: () => void }) {
+function EditServer({
+  closePopUp,
+  popUpTarget,
+  setPopUpTarget,
+}: {
+  closePopUp: () => void;
+  popUpTarget: string | null;
+  setPopUpTarget: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
   const [assets, setAssets] = useState<string[]>([]);
   const [loadingAssets, setLoadingAssets] = useState<boolean>(false);
 
@@ -53,6 +61,18 @@ function AddServer({ closePopUp }: { closePopUp: () => void }) {
 
   useEffect(() => {
     loadAssets();
+
+    const data = servers.servers.find((server) => server.id === popUpTarget);
+    if (!data) return;
+
+    setServerName(data.title);
+    setServerLogoMode("select");
+    setServerLogoSelected(data.logo);
+    setServerLogoPosition(data.logoPosition);
+
+    setServerBannerMode("select");
+    setServerBannerSelected(data.banner);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const submit = () => {
@@ -122,7 +142,7 @@ function AddServer({ closePopUp }: { closePopUp: () => void }) {
 
       setSubmitLoading("Saving Server...");
       axios
-        .post(`${getBaseURL()}/servers`, data, {
+        .patch(`${getBaseURL()}/servers/${popUpTarget}`, data, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -148,9 +168,12 @@ function AddServer({ closePopUp }: { closePopUp: () => void }) {
   };
 
   return (
-    <Backdrop open sx={{
-      zIndex: 1000,
-    }}>
+    <Backdrop
+      open
+      sx={{
+        zIndex: 1000,
+      }}
+    >
       <Backdrop
         open={Boolean(submitLoading)}
         sx={{
@@ -385,7 +408,7 @@ function AddServer({ closePopUp }: { closePopUp: () => void }) {
               loading={loadingAssets}
               loadingText="Loading Assets..."
               options={[
-                { label: "None", value: undefined },
+                { label: "None", value: null },
                 ...assets.map((asset) => ({
                   label: asset,
                   value: asset,
@@ -393,11 +416,11 @@ function AddServer({ closePopUp }: { closePopUp: () => void }) {
               ]}
               value={{
                 label: serverBannerSelected ?? "None",
-                value: serverBannerSelected ?? undefined,
+                value: serverBannerSelected,
               }}
               onChange={(e, v) => {
                 if (!v) return;
-                setServerBannerSelected(v.value ?? null);
+                setServerBannerSelected(v.value);
               }}
               sx={{ width: "100%", mt: "1rem" }}
               renderInput={(params) => (
@@ -463,4 +486,4 @@ function AddServer({ closePopUp }: { closePopUp: () => void }) {
   );
 }
 
-export default AddServer;
+export default EditServer;

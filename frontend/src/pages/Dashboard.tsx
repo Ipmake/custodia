@@ -8,15 +8,23 @@ import {
 } from "@mui/material";
 import { useGeneralState } from "../states/GeneralState";
 import { useEffect, useState } from "react";
-import { AddCard, Edit, Save } from "@mui/icons-material";
+import {
+  AddCard,
+  Edit,
+  FileOpen,
+  Person,
+  Save,
+  Settings,
+} from "@mui/icons-material";
 import Server from "../components/Server";
 import { useServers } from "../states/Servers";
 import Popup from "../components/Popup";
+import { getBaseURL } from "../functions";
 
 function Dashboard() {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [popUpState, setPopUpState] = useState<string>("none");
-  const [popUpTarget, setPopUpTarget] = useState<string | null>(null); 
+  const [popUpTarget, setPopUpTarget] = useState<string | null>(null);
 
   const data = useGeneralState();
   const servers = useServers();
@@ -57,6 +65,7 @@ function Dashboard() {
           justifyContent: "center",
 
           width: "100%",
+          height: "100vh",
         }}
       >
         <Box
@@ -67,12 +76,53 @@ function Dashboard() {
             justifyContent: "center",
 
             width: "100%",
-            height: "100vh",
             backgroundColor: "#202020",
+            ...(data.banner && {
+              background:
+                data.banner &&
+                `linear-gradient(45deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),url('${getBaseURL().replace(
+                  "/api",
+                  ""
+                )}/assets/${encodeURIComponent(data.banner)}')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }),
             padding: "1rem",
             margin: "1rem",
+            py: "2rem",
+            my: "2rem",
           }}
         >
+          <Box
+            sx={{
+              position: "absolute",
+              left: "1rem",
+
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              variant="outlined"
+              sx={{
+                gap: "0.5rem",
+                marginLeft: editMode ? "0.5rem" : "0rem",
+                overflow: "hidden",
+                opacity: editMode ? 1 : 0,
+                pointerEvents: editMode ? "all" : "none",
+                transition: "all 0.5s ease",
+              }}
+              onClick={() => {
+                setPopUpState("password");
+              }}
+            >
+              <Person fontSize="small" />
+              User
+            </Button>
+          </Box>
+
           <Typography
             sx={{
               fontSize: "2rem",
@@ -90,29 +140,74 @@ function Dashboard() {
             {data.subtitle}
           </Typography>
 
-          <Button
-            variant="outlined"
+          <Box
             sx={{
               position: "absolute",
               right: "1rem",
-              gap: "0.5rem",
-            }}
-            onClick={() => {
-              setEditMode(!editMode);
+
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-end",
             }}
           >
-            {editMode ? (
-              <>
-                <Save fontSize="small" />
-                Save
-              </>
-            ) : (
-              <>
-                <Edit fontSize="small" />
-                Edit
-              </>
-            )}
-          </Button>
+            <Button
+              variant="outlined"
+              sx={{
+                gap: "0.5rem",
+                marginRight: editMode ? "0.5rem" : "0rem",
+                overflow: "hidden",
+                opacity: editMode ? 1 : 0,
+                pointerEvents: editMode ? "all" : "none",
+                transition: "all 0.5s ease",
+              }}
+              onClick={() => {
+                setPopUpState("media");
+              }}
+            >
+              <FileOpen fontSize="small" />
+              Assets
+            </Button>
+            <Button
+              variant="outlined"
+              sx={{
+                gap: "0.5rem",
+                marginRight: editMode ? "0.5rem" : "0rem",
+                overflow: "hidden",
+                opacity: editMode ? 1 : 0,
+                pointerEvents: editMode ? "all" : "none",
+                transition: "all 0.5s ease",
+              }}
+              onClick={() => {
+                setPopUpState("settings");
+              }}
+            >
+              <Settings fontSize="small" />
+              Settings
+            </Button>
+
+            <Button
+              variant="outlined"
+              sx={{
+                gap: "0.5rem",
+              }}
+              onClick={() => {
+                setEditMode(!editMode);
+              }}
+            >
+              {editMode ? (
+                <>
+                  <Save fontSize="small" />
+                  Save
+                </>
+              ) : (
+                <>
+                  <Edit fontSize="small" />
+                  Edit
+                </>
+              )}
+            </Button>
+          </Box>
         </Box>
         <Box
           sx={{
@@ -156,18 +251,20 @@ function Dashboard() {
             py: "0.5rem",
           }}
         >
-          {servers.servers.sort((a, b) => a.position - b.position).map((server) => (
-            <Server
-              {...{
-                ...server,
-                editMode: editMode,
-                draggedServer: draggedServer,
-                setDraggedServer: setDraggedServer,
-                setPopUpState: setPopUpState,
-                setPopUpTarget: setPopUpTarget,
-              }}
-            />
-          ))}
+          {servers.servers
+            .sort((a, b) => a.position - b.position)
+            .map((server) => (
+              <Server
+                {...{
+                  ...server,
+                  editMode: editMode,
+                  draggedServer: draggedServer,
+                  setDraggedServer: setDraggedServer,
+                  setPopUpState: setPopUpState,
+                  setPopUpTarget: setPopUpTarget,
+                }}
+              />
+            ))}
         </Grid>
       </Box>
     </>

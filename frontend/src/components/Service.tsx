@@ -2,6 +2,7 @@ import { KeyboardArrowDown, MoreHoriz, OpenInNew } from "@mui/icons-material";
 import { Avatar, Box, IconButton, Typography } from "@mui/material";
 import { getBaseURL } from "../functions";
 import { useServers } from "../states/Servers";
+import { useLocation } from "react-router-dom";
 
 function Service({
   id,
@@ -26,12 +27,14 @@ function Service({
   setDraggingService: (service: Types.Service | false) => void;
 } & Types.Service) {
   const servers = useServers();
+  const localtion = useLocation();
 
   const showDragField =
     editMode &&
     draggingService !== false &&
     draggingService?.id !== id &&
-    draggingService?.position + 1 !== position;
+    draggingService?.position + 1 !== position &&
+    position !== 0;
   const showDragFieldBelow =
     editMode &&
     draggingService !== false &&
@@ -78,7 +81,7 @@ function Service({
         }}
         onClick={async () => {
           if (draggingService === false || draggingService.id === id) return;
-          await servers.moveService(
+          servers.moveService(
             servers.servers.find((s) => s.id === server) as Types.Server,
             draggingService,
             position
@@ -193,8 +196,10 @@ function Service({
               ml: "auto",
             }}
             href={link}
-            target="_blank"
-            rel="noreferrer"
+            {...(!localtion.search.includes("newTab=false") && {
+              target: "_blank",
+              rel: "noreferrer",
+            })}
           >
             <OpenInNew />
           </IconButton>
@@ -216,13 +221,13 @@ function Service({
           border: "1px dashed #fff",
           transition: "all 0.5s ease",
         }}
-        onClick={async () => {
+        onClick={() => {
           if (draggingService === false || draggingService.id === id) return;
-          await servers.moveService(
+          servers.moveService(
             servers.servers.find((s) => s.id === server) as Types.Server,
             draggingService,
             (servers.servers.find((s) => s.id === server) as Types.Server)
-              .services.length-1
+              .services.length - 1
           );
           setDraggingService(false);
         }}
