@@ -1,0 +1,38 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [uuidOssp(map: "uuid-ossp")]
+}
+
+model config {
+  key   String  @id @db.VarChar(16)
+  value String?
+}
+
+model servers {
+  id           String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  title        String  @db.VarChar(50)
+  logo         String  @db.VarChar(128)
+  logoPosition String  @default("c") @db.Char
+  banner       String? @db.VarChar(128)
+  position     Int     @default(autoincrement())
+
+  services services[]
+}
+
+model services {
+  id       String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  serverID String  @db.Uuid
+  title    String  @db.VarChar(32)
+  subtitle String? @db.VarChar(50)
+  icon     String  @db.VarChar(128)
+  link     String
+  position Int     @default(0)
+
+  server servers @relation(fields: [serverID], references: [id])
+}
